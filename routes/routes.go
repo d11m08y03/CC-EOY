@@ -12,7 +12,7 @@ func SetupRouter() *gin.Engine {
 	r.POST("/register", controllers.Register)
 	r.POST("/login", controllers.Login)
 
-  // Protected routes
+	// Protected routes
 	authRoutes := r.Group("/auth")
 	authRoutes.Use(middleware.JWTAuthMiddleware())
 	{
@@ -21,6 +21,8 @@ func SetupRouter() *gin.Engine {
 			email := c.MustGet("email")
 			c.JSON(200, gin.H{"user_id": userID, "email": email})
 		})
+
+		authRoutes.POST("/students", controllers.CreateStudent)
 	}
 
 	return r

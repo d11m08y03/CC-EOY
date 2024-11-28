@@ -21,24 +21,38 @@ func InitDB() {
 }
 
 func CreateTables() {
-	tableName := "users"
-	if tableExists(tableName) {
-		log.Printf("Table '%s' already exists.\n", tableName)
+	createStudentsTable := `
+    CREATE TABLE IF NOT EXISTS students (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_number TEXT NOT NULL UNIQUE,
+        created_by INTEGER NOT NULL,
+        FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE CASCADE
+    );`
+
+	createUsersTable := `
+      CREATE TABLE users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL UNIQUE,
+          password TEXT NOT NULL
+      );`
+
+	createTable("users", createUsersTable)
+	createTable("students", createStudentsTable)
+}
+
+func createTable(table string, cmd string) {
+	if tableExists(table) {
+		log.Printf("Table '%s' already exists.\n", table)
 		return
 	}
 
-	createUsersTable := `
-        CREATE TABLE users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL
-        );`
-	_, err := DB.Exec(createUsersTable)
+	_, err := DB.Exec(cmd)
 	if err != nil {
-		log.Fatalf("Failed to create table '%s': %v", tableName, err)
+		log.Fatalf("Failed to create table '%s': %v", table, err)
 	}
-	log.Printf("Table '%s' was successfully created.\n", tableName)
+
+	log.Printf("Table '%s' was successfully created.\n", table)
 }
 
 func tableExists(tableName string) bool {
