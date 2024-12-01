@@ -31,6 +31,7 @@ func SetupRouter() *gin.Engine {
 		})
 
 		authRoutes.POST("/students", controllers.CreateStudent)
+    authRoutes.PUT("/students", controllers.MarkStudentAsPresent)
 	}
 
 	return r

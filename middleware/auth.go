@@ -24,7 +24,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		}
 
 		// Add claims to context for further use
-		c.Set("user_id", claims.UserID)
+		c.Set("organisor_id", claims.OrganisorID)
 		c.Set("email", claims.Email)
 		c.Next()
 	}

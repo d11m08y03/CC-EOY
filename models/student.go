@@ -23,12 +23,15 @@ type Student struct {
 }
 
 type CreateStudentPayload struct {
-	StudentID   string `json:"student_id"`
-	FullName    string `json:"full_name"`
-	OrganisorID string `json:"organiser_id"`
+	StudentID string `json:"student_id"`
+	FullName  string `json:"full_name"`
 }
 
-func (s *Student) Create(payload CreateStudentPayload) error {
+type MarkStudentPresentPayload struct {
+	StudentID string `json:"student_id"`
+}
+
+func (s *Student) Create(payload CreateStudentPayload, organiserID string) error {
 	var existingStudentID int
 	err := database.DB.QueryRow("SELECT StudentID FROM students WHERE StudentID = ?", payload.StudentID).Scan(&existingStudentID)
 	if err != sql.ErrNoRows {
@@ -42,7 +45,7 @@ func (s *Student) Create(payload CreateStudentPayload) error {
     INSERT INTO students (StudentID, FullName, Presence, OrganiserID)
     VALUES (?, ?, ?, ?);`
 
-	result, err := database.DB.Exec(query, payload.StudentID, payload.FullName, 1, payload.OrganisorID)
+	result, err := database.DB.Exec(query, payload.StudentID, payload.FullName, 1, organiserID)
 	if err != nil {
 		return err
 	}
@@ -55,15 +58,16 @@ func (s *Student) Create(payload CreateStudentPayload) error {
 	s.ID = int(lastInsertID)
 	s.StudentID = payload.StudentID
 	s.FullName = payload.FullName
-	s.OrganiserID = payload.OrganisorID
+	s.OrganiserID = organiserID
 	s.Presence = true
 
 	return nil
 }
 
-func MarkAsPresent(studentID int, organiserID int) error {
+func MarkAsPresent(payload MarkStudentPresentPayload, organiserID string) error {
 	var existingStudentID int
-	err := database.DB.QueryRow("SELECT id FROM students WHERE id = ?", studentID).Scan(&existingStudentID)
+	var currentPresence bool
+	err := database.DB.QueryRow("SELECT StudentID, Presence FROM students WHERE StudentID = ?", payload.StudentID).Scan(&existingStudentID, &currentPresence)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return errors.New("student not found")
@@ -71,12 +75,16 @@ func MarkAsPresent(studentID int, organiserID int) error {
 		return err
 	}
 
+	if currentPresence {
+		return errors.New("student is already marked as present")
+	}
+
 	updateQuery := `
 		UPDATE students
-		SET Present = ?, OrganiserID = ?
+		SET Presence = ?, OrganiserID = ?
 		WHERE StudentID = ?;`
 
-	_, err = database.DB.Exec(updateQuery, true, organiserID, studentID)
+	_, err = database.DB.Exec(updateQuery, true, organiserID, payload.StudentID)
 	if err != nil {
 		return fmt.Errorf("failed to mark student as present: %v", err)
 	}

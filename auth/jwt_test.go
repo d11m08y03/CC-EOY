@@ -23,8 +23,8 @@ func TestGenerateJWT(t *testing.T) {
 	}
 
 	// Verify the claims
-	if claims.UserID != userID {
-		t.Errorf("Expected UserID %v, got %v", userID, claims.UserID)
+	if claims.OrganisorID != userID {
+		t.Errorf("Expected UserID %v, got %v", userID, claims.OrganisorID)
 	}
 	if claims.Email != email {
 		t.Errorf("Expected Email %v, got %v", email, claims.Email)
@@ -46,7 +46,7 @@ func TestValidateJWT_InvalidToken(t *testing.T) {
 func TestValidateJWT_ExpiredToken(t *testing.T) {
 	// Create a token with a past expiration time
 	expiredClaims := &Claims{
-		UserID: 1,
+		OrganisorID: 1,
 		Email:  "test@example.com",
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(-1 * time.Hour).Unix(),
