@@ -73,17 +73,3 @@ func TestTableExists(t *testing.T) {
 		t.Error("Expected table 'non_existent_table' to not exist, but it does")
 	}
 }
-
-func TestCreateTable(t *testing.T) {
-	// Setup in-memory DB
-	db := setupTestDB()
-	defer teardownTestDB(db)
-
-	// Run createTable
-	createTable("new_table", "CREATE TABLE new_table (id INTEGER PRIMARY KEY)")
-
-	// Verify table exists
-	if !tableExists("new_table") {
-		t.Error("Expected table 'new_table' to exist, but it does not")
-	}
-}

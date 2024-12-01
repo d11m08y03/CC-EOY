@@ -2,7 +2,10 @@ package database
 
 import (
 	"database/sql"
+	"encoding/csv"
 	"log"
+	"os"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -21,38 +24,33 @@ func InitDB() {
 }
 
 func CreateTables() {
-	createStudentsTable := `
-    CREATE TABLE IF NOT EXISTS students (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        student_number TEXT NOT NULL UNIQUE,
-        created_by INTEGER NOT NULL,
-        FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE CASCADE
-    );`
+	if executeSQLFile("./database/create_students.sql", "students") {
+		LoadStudentDataFromCSV("./database/gay.csv")
+	}
 
-	createUsersTable := `
-      CREATE TABLE users (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          email TEXT NOT NULL UNIQUE,
-          password TEXT NOT NULL
-      );`
+	executeSQLFile("./database/create_organisors.sql", "organisors")
 
-	createTable("users", createUsersTable)
-	createTable("students", createStudentsTable)
 }
 
-func createTable(table string, cmd string) {
-	if tableExists(table) {
-		log.Printf("Table '%s' already exists.\n", table)
-		return
-	}
-
-	_, err := DB.Exec(cmd)
+func executeSQLFile(filename string, tableName string) bool {
+	content, err := os.ReadFile(filename)
 	if err != nil {
-		log.Fatalf("Failed to create table '%s': %v", table, err)
+		log.Fatalf("Failed to read SQL file '%s': %v", filename, err)
 	}
 
-	log.Printf("Table '%s' was successfully created.\n", table)
+	if tableExists(tableName) {
+		log.Printf("Table '%s' already exists.\n", tableName)
+		return false
+	}
+
+	_, err = DB.Exec(string(content))
+	if err != nil {
+		log.Fatalf("Failed to execute SQL file '%s': %v", filename, err)
+	}
+
+	log.Printf("Table '%s' was successfully created.\n", tableName)
+
+	return true
 }
 
 func tableExists(tableName string) bool {
@@ -72,4 +70,55 @@ func tableExists(tableName string) bool {
 	}
 
 	return true
+}
+
+func LoadStudentDataFromCSV(filename string) {
+	if !tableExists("students") {
+		log.Println("The 'students' table does not exist. Skipping CSV data loading.")
+		return
+	}
+
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Fatalf("Failed to open CSV file '%s': %v", filename, err)
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	reader.TrimLeadingSpace = true
+	records, err := reader.ReadAll()
+	if err != nil {
+		log.Fatalf("Failed to read CSV file '%s': %v", filename, err)
+	}
+
+	// Insert records into the database
+	for _, record := range records {
+		if len(record) < 9 {
+			log.Printf("Skipping invalid record: %v", record)
+			continue
+		}
+
+		insertQuery := `
+        INSERT INTO students (
+            Timestamp, Email, FullName, ProgrammeOfStudy, Faculty, StudentID, Level, ContactNumber, InternshipWork
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`
+
+		_, err := DB.Exec(insertQuery,
+			strings.TrimSpace(record[0]),
+			strings.TrimSpace(record[1]),
+			strings.TrimSpace(record[2]),
+			strings.TrimSpace(record[3]),
+			strings.TrimSpace(record[4]),
+			strings.TrimSpace(record[5]),
+			strings.TrimSpace(record[6]),
+			strings.TrimSpace(record[7]),
+			strings.TrimSpace(record[8]),
+		)
+
+		if err != nil {
+			log.Printf("Failed to insert record '%v': %v", record, err)
+		} else {
+			log.Printf("Record inserted successfully: %v", record)
+		}
+	}
 }

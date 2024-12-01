@@ -10,7 +10,7 @@ import (
 )
 
 func Register(c *gin.Context) {
-	var input models.User
+	var input models.Organisor
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -24,7 +24,7 @@ func Register(c *gin.Context) {
 
 	input.Password = string(hashedPassword)
 
-	if err := models.CreateUser(input); err != nil {
+	if err := models.CreateOrganisor(input); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

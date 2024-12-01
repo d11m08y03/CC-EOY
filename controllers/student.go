@@ -25,6 +25,7 @@ func CreateStudent(c *gin.Context) {
 	}
 
 	student := models.Student{}
+
 	err := student.Create(input.StudentNumber, userID.(uint))
 	if err != nil {
 		log.Printf("Error inserting student: %v", err)
