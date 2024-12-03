@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/d11m08y03/CC-EOY/database"
+	"github.com/d11m08y03/CC-EOY/logger"
 )
 
 type Student struct {
@@ -42,9 +43,15 @@ func (s *Student) Create(payload CreateStudentPayload, organiserID string) error
 	var existingStudentID int
 	err := database.DB.QueryRow("SELECT StudentID FROM students WHERE StudentID = ?", payload.StudentID).Scan(&existingStudentID)
 	if err != sql.ErrNoRows {
+    if err != nil {
+      logger.Error(fmt.Sprintf("Failed to query if student %s is already present: %s", payload.StudentID, err.Error()))
+    }
+
 		if err == nil {
-			return errors.New("student with this ID already exists")
+			logger.Info(fmt.Sprintf("Attempt to duplicate a student (%s) by organisor %s", payload.StudentID, organiserID))
+			return errors.New("Student with this ID already exists")
 		}
+
 		return err
 	}
 
@@ -72,13 +79,14 @@ func MarkAsPresent(payload MarkStudentPresentPayload, organiserID string) error 
 	err := database.DB.QueryRow("SELECT StudentID, Presence FROM students WHERE StudentID = ?", payload.StudentID).Scan(&existingStudentID, &currentPresence)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return errors.New("student not found")
+			return errors.New("Student not found")
 		}
+
 		return err
 	}
 
 	if currentPresence {
-		return errors.New("student is already marked as present")
+		return errors.New("Student is already marked as present")
 	}
 
 	updateQuery := `
@@ -88,7 +96,7 @@ func MarkAsPresent(payload MarkStudentPresentPayload, organiserID string) error 
 
 	_, err = database.DB.Exec(updateQuery, true, organiserID, payload.StudentID)
 	if err != nil {
-		return fmt.Errorf("failed to mark student as present: %v", err)
+		return fmt.Errorf("Failed to mark student as present: %v", err)
 	}
 
 	return nil
