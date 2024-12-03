@@ -30,15 +30,19 @@ func CreateStudent(c *gin.Context) {
 	err := student.Create(payload, organisorIDStr)
 	if err != nil {
 		log.Printf("Error inserting student: %v", err)
-		if err.Error() == "student with this number already exists" {
-			c.JSON(http.StatusConflict, gin.H{"error": "Student with this number already exists"})
+		if err.Error() == "student with this ID already exists" {
+			c.JSON(http.StatusConflict, gin.H{"error": "student with this ID already exists"})
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create student"})
 		}
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"student": student})
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "Student marked as present",
+		"student_id": student.StudentID,
+		"full_name":  student.FullName.String,
+	})
 }
 
 func MarkStudentAsPresent(c *gin.Context) {
@@ -68,12 +72,22 @@ func MarkStudentAsPresent(c *gin.Context) {
 		if err.Error() == "student not found" {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Student not found"})
 		} else if err.Error() == "student is already marked as present" {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "student is already marked as present"})
+			c.JSON(http.StatusConflict, gin.H{"error": "student is already marked as present"})
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to mark student as present"})
 		}
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Student marked as present"})
+	updatedStudent, err := models.GetStudentByID(payload.StudentID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve student details but presence updated"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "Student marked as present",
+		"student_id": updatedStudent.StudentID,
+		"full_name":  updatedStudent.FullName.String,
+	})
 }

@@ -4,22 +4,29 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/d11m08y03/CC-EOY/database"
 )
 
 type Student struct {
-	ID               int    `json:"id"`
-	Email            string `json:"email"`
-	FullName         string `json:"full_name"`
-	ProgrammeOfStudy string `json:"programme_of_study"`
-	Faculty          string `json:"faculty"`
-	StudentID        string `json:"student_id"`
-	Level            string `json:"level"`
-	ContactNumber    string `json:"contact_number"`
-	InternshipWork   string `json:"internship_work"`
-	Presence         bool   `json:"presence"`
-	OrganiserID      string `json:"organiser_id"`
+	Timestamp        sql.NullString `json:"timestamp"`
+	Email            sql.NullString `json:"email"`
+	FullName         sql.NullString `json:"full_name"`
+	ProgrammeOfStudy sql.NullString `json:"programme_of_study"`
+	Faculty          sql.NullString `json:"faculty"`
+	StudentID        string         `json:"student_id"`
+	Level            sql.NullString `json:"level"`
+	ContactNumber    sql.NullString `json:"contact_number"`
+	InternshipWork   sql.NullString `json:"internship_work"`
+	Presence         bool           `json:"presence"`
+	OrganiserID      string         `json:"organiser_id"`
+}
+
+type FindStudentDB struct {
+	FullName  sql.NullString `json:"full_name"`
+	StudentID string         `json:"student_id"`
 }
 
 type CreateStudentPayload struct {
@@ -45,19 +52,14 @@ func (s *Student) Create(payload CreateStudentPayload, organiserID string) error
     INSERT INTO students (StudentID, FullName, Presence, OrganiserID)
     VALUES (?, ?, ?, ?);`
 
-	result, err := database.DB.Exec(query, payload.StudentID, payload.FullName, 1, organiserID)
+	_, err = database.DB.Exec(query, payload.StudentID, payload.FullName, 1, organiserID)
 	if err != nil {
 		return err
 	}
 
-	lastInsertID, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-
-	s.ID = int(lastInsertID)
+	s.Timestamp.String = time.Now().Format("2006-01-02 15:04:05")
 	s.StudentID = payload.StudentID
-	s.FullName = payload.FullName
+	s.FullName.String = payload.FullName
 	s.OrganiserID = organiserID
 	s.Presence = true
 
@@ -90,4 +92,24 @@ func MarkAsPresent(payload MarkStudentPresentPayload, organiserID string) error 
 	}
 
 	return nil
+}
+
+func GetStudentByID(studentID string) (*FindStudentDB, error) {
+	query := "SELECT FullName, StudentID FROM students WHERE StudentID = ?"
+
+	var student FindStudentDB
+	err := database.DB.QueryRow(query, studentID).Scan(
+		&student.FullName,
+		&student.StudentID,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("student with StudentID %s not found", studentID)
+		}
+		log.Println(err.Error())
+		return nil, fmt.Errorf("error retrieving student: %v", err)
+	}
+
+	return &student, nil
 }
