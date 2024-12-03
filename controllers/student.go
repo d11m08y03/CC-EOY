@@ -33,6 +33,7 @@ func CreateStudent(c *gin.Context) {
 		if err.Error() == "student with this ID already exists" {
 			c.JSON(http.StatusConflict, gin.H{"error": "student with this ID already exists"})
 		} else {
+      log.Println(err.Error())
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create student"})
 		}
 		return
