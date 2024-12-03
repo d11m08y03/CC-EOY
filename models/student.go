@@ -56,8 +56,8 @@ func (s *Student) Create(payload CreateStudentPayload, organiserID string) error
 	}
 
 	query := `
-    INSERT INTO students (StudentID, FullName, OrganiserID)
-    VALUES (?, ?, ?);`
+    INSERT INTO students (StudentID, FullName, Presence, OrganiserID)
+    VALUES (?, ?, ?, ?);`
 
 	_, err = database.DB.Exec(query, payload.StudentID, payload.FullName, 1, organiserID)
 	if err != nil {
