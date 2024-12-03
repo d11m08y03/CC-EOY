@@ -86,7 +86,7 @@ func MarkAsPresent(payload MarkStudentPresentPayload, organiserID string) error 
 	}
 
 	if currentPresence {
-		return errors.New("Student is already marked as present")
+		return fmt.Errorf("Student is already marked as present")
 	}
 
 	updateQuery := `
