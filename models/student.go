@@ -25,7 +25,7 @@ type Student struct {
 	OrganiserID      string         `json:"organiser_id"`
 }
 
-type FindStudentDB struct {
+type FindPartialStudentDB struct {
 	FullName  sql.NullString `json:"full_name"`
 	StudentID string         `json:"student_id"`
 }
@@ -43,9 +43,9 @@ func (s *Student) Create(payload CreateStudentPayload, organiserID string) error
 	var existingStudentID int
 	err := database.DB.QueryRow("SELECT StudentID FROM students WHERE StudentID = ?", payload.StudentID).Scan(&existingStudentID)
 	if err != sql.ErrNoRows {
-    if err != nil {
-      logger.Error(fmt.Sprintf("Failed to query if student %s is already present: %s", payload.StudentID, err.Error()))
-    }
+		if err != nil {
+			logger.Error(fmt.Sprintf("Failed to query if student %s is already present: %s", payload.StudentID, err.Error()))
+		}
 
 		if err == nil {
 			logger.Info(fmt.Sprintf("Attempt to duplicate a student (%s) by organisor %s", payload.StudentID, organiserID))
@@ -102,10 +102,10 @@ func MarkAsPresent(payload MarkStudentPresentPayload, organiserID string) error 
 	return nil
 }
 
-func GetStudentByID(studentID string) (*FindStudentDB, error) {
+func GetPartialStudentByID(studentID string) (*FindPartialStudentDB, error) {
 	query := "SELECT FullName, StudentID FROM students WHERE StudentID = ?"
 
-	var student FindStudentDB
+	var student FindPartialStudentDB
 	err := database.DB.QueryRow(query, studentID).Scan(
 		&student.FullName,
 		&student.StudentID,
@@ -117,6 +117,36 @@ func GetStudentByID(studentID string) (*FindStudentDB, error) {
 		}
 		log.Println(err.Error())
 		return nil, fmt.Errorf("error retrieving student: %v", err)
+	}
+
+	return &student, nil
+}
+
+func GetFullStudentByID(studentID string) (*Student, error) {
+	query := "SELECT Timestamp, Email, FullName, ProgrammeOfStudy, Faculty, StudentID, Level, ContactNumber, InternshipWork FROM students WHERE StudentID = ?"
+
+	row := database.DB.QueryRow(query, studentID)
+
+	var student Student
+
+	err := row.Scan(
+		&student.Timestamp,
+		&student.Email,
+		&student.FullName,
+		&student.ProgrammeOfStudy,
+		&student.Faculty,
+		&student.StudentID,
+		&student.Level,
+		&student.ContactNumber,
+		&student.InternshipWork,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("Student with StudentID %s not found", studentID)
+		}
+		log.Println(err.Error())
+		return nil, fmt.Errorf("Error retrieving student: %v", err)
 	}
 
 	return &student, nil
