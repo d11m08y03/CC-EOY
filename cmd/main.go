@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/d11m08y03/CC-EOY/config"
 	"github.com/d11m08y03/CC-EOY/database"
 	"github.com/d11m08y03/CC-EOY/logger"
 	"github.com/d11m08y03/CC-EOY/routes"
@@ -8,13 +9,18 @@ import (
 )
 
 func main() {
-  logger.StartFileLogging()
+	config.InitConfig()
 
-  gin.SetMode(gin.ReleaseMode)
+	if config.Environment == "Prod" {
+		logger.StartFileLogging()
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	database.InitDB()
 	router := routes.SetupRouter()
-	router.Run(":8080")
+	router.Run(config.Port)
 
-  logger.StopFileLogging()
+	if config.Environment == "Prod" {
+		logger.StopFileLogging()
+	}
 }
