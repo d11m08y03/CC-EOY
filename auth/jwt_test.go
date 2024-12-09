@@ -11,7 +11,7 @@ func TestGenerateJWT(t *testing.T) {
 	userID := uint(1)
 	email := "test@example.com"
 
-	token, err := GenerateJWT(userID, email)
+	token, err := GenerateJWT(userID, email, false)
 	if err != nil {
 		t.Fatalf("GenerateJWT returned an error: %v", err)
 	}
@@ -45,7 +45,7 @@ func TestValidateJWT_InvalidToken(t *testing.T) {
 
 func TestValidateJWT_ExpiredToken(t *testing.T) {
 	// Create a token with a past expiration time
-	expiredClaims := &Claims{
+	expiredClaims := &OrganisorClaims{
 		OrganisorID: 1,
 		Email:  "test@example.com",
 		StandardClaims: jwt.StandardClaims{

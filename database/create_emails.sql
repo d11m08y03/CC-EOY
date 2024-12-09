@@ -1,7 +1,7 @@
-CREATE TABLE organisors (
+CREATE TABLE emails (
   ID INTEGER PRIMARY KEY AUTOINCREMENT,  
-  Name TEXT NOT NULL,                    
   Email TEXT UNIQUE NOT NULL,            
   Password TEXT NOT NULL,
-  IsAdmin INTEGER DEFAULT 0
+  AppPassword TEXT NOT NULL,
+  Sent INTEGER DEFAULT 0 
 );

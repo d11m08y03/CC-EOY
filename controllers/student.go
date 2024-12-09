@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/d11m08y03/CC-EOY/email"
 	"github.com/d11m08y03/CC-EOY/logger"
 	"github.com/d11m08y03/CC-EOY/models"
 	"github.com/gin-gonic/gin"
@@ -45,6 +46,7 @@ func CreateStudent(c *gin.Context) {
 	}
 
 	logger.Info(fmt.Sprintf("%s marked %s as present", organisorIDStr, payload.StudentID))
+  email.SendEmail(student.Email.String)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":    "Student marked as present",
@@ -101,6 +103,7 @@ func MarkStudentAsPresent(c *gin.Context) {
 	}
 
 	logger.Info(fmt.Sprintf("%s marked %s as present", organisorIDStr, payload.StudentID))
+  email.SendEmail(updatedStudent.Email.String)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":    "Student marked as present",

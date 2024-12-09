@@ -17,8 +17,10 @@ func SetupRouter() *gin.Engine {
 		AllowCredentials: true,
 	}))
 
-	r.POST("/register", controllers.Register)
 	r.POST("/login", controllers.Login)
+
+	// Admin-only route for registration
+	r.POST("/register", middleware.AdminAuthMiddleware(), controllers.Register)
 
 	// Protected routes
 	authRoutes := r.Group("/auth")
@@ -31,7 +33,7 @@ func SetupRouter() *gin.Engine {
 		})
 
 		authRoutes.POST("/students", controllers.CreateStudent)
-    authRoutes.PUT("/students", controllers.MarkStudentAsPresent)
+		authRoutes.PUT("/students", controllers.MarkStudentAsPresent)
 	}
 
 	return r
