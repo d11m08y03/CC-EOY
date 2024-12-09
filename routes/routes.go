@@ -19,6 +19,8 @@ func SetupRouter() *gin.Engine {
 
 	r.POST("/login", controllers.Login)
 
+	r.POST("/create-admin", controllers.CreateAdmin)
+
 	// Admin-only route for registration
 	r.POST("/register", middleware.AdminAuthMiddleware(), controllers.Register)
 

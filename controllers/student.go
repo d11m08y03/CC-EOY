@@ -8,6 +8,7 @@ import (
 	"github.com/d11m08y03/CC-EOY/logger"
 	"github.com/d11m08y03/CC-EOY/models"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func CreateStudent(c *gin.Context) {
@@ -46,7 +47,7 @@ func CreateStudent(c *gin.Context) {
 	}
 
 	logger.Info(fmt.Sprintf("%s marked %s as present", organisorIDStr, payload.StudentID))
-  email.SendEmail(student.Email.String)
+	email.SendEmail(student.Email.String)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":    "Student marked as present",
@@ -103,17 +104,62 @@ func MarkStudentAsPresent(c *gin.Context) {
 	}
 
 	logger.Info(fmt.Sprintf("%s marked %s as present", organisorIDStr, payload.StudentID))
-  email.SendEmail(updatedStudent.Email.String)
+	email.SendEmail(updatedStudent.Email.String)
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":    "Student marked as present",
-		"email":      updatedStudent.Email.String,
-    "full_name": updatedStudent.FullName.String,
-    "program_of_study": updatedStudent.ProgrammeOfStudy.String,
-    "faculty": updatedStudent.Faculty.String,
-		"student_id": updatedStudent.StudentID,
-    "level": updatedStudent.Level.String,
-    "contact_number": updatedStudent.ContactNumber.String,
-    "internship_work": updatedStudent.InternshipWork.String,
+		"message":          "Student marked as present",
+		"email":            updatedStudent.Email.String,
+		"full_name":        updatedStudent.FullName.String,
+		"program_of_study": updatedStudent.ProgrammeOfStudy.String,
+		"faculty":          updatedStudent.Faculty.String,
+		"student_id":       updatedStudent.StudentID,
+		"level":            updatedStudent.Level.String,
+		"contact_number":   updatedStudent.ContactNumber.String,
+		"internship_work":  updatedStudent.InternshipWork.String,
 	})
+}
+
+func CreateAdmin(c *gin.Context) {
+	logger.Info("Create Admin controller hit")
+
+	var input struct {
+		Name     string `json:"name" binding:"required"`
+		Email    string `json:"email" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		logger.Error(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	existingUser, err := models.FindUserByEmail(input.Email)
+	if err == nil && existingUser.ID > 0 {
+		logger.Error("Email already exists")
+		c.JSON(http.StatusConflict, gin.H{"error": "Email is already registered"})
+		return
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	if err != nil {
+		logger.Error("Failed to hash password")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		return
+	}
+
+	admin := models.Organisor{
+		Name:     input.Name,
+		Email:    input.Email,
+		Password: string(hashedPassword),
+		IsAdmin:  1,
+	}
+
+	if err := models.CreateOrganisor(admin); err != nil {
+		logger.Error(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Admin user created successfully"})
 }
