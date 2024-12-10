@@ -1,5 +1,7 @@
 external
 *.db
+*.txt
+.env
 
 # Miscellaneous
 *.class
