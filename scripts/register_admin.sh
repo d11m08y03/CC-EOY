@@ -1,6 +1,5 @@
 #!/bin/bash
-
-curl -X POST http://localhost:8080/register \
+curl -X POST http://localhost:8080/create-admin \
 -H "Content-Type: application/json" \
 -d '{
     "name": "John Doe",

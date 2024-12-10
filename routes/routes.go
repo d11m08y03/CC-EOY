@@ -19,6 +19,7 @@ func SetupRouter() *gin.Engine {
 
 	r.POST("/login", controllers.Login)
 
+	// Route only available during testing
 	r.POST("/create-admin", controllers.CreateAdmin)
 
 	// Admin-only route for registration
@@ -28,12 +29,6 @@ func SetupRouter() *gin.Engine {
 	authRoutes := r.Group("/auth")
 	authRoutes.Use(middleware.JWTAuthMiddleware())
 	{
-		authRoutes.GET("/profile", func(c *gin.Context) {
-			userID := c.MustGet("user_id")
-			email := c.MustGet("email")
-			c.JSON(200, gin.H{"user_id": userID, "email": email})
-		})
-
 		authRoutes.POST("/students", controllers.CreateStudent)
 		authRoutes.PUT("/students", controllers.MarkStudentAsPresent)
 	}

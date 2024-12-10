@@ -18,9 +18,15 @@ type Organisor struct {
 }
 
 func FindUserByEmail(email string) (*Organisor, error) {
-	row := database.DB.QueryRow("SELECT id, name, email, password, IsAdmin FROM organisors WHERE email = ?", email)
+	row := database.DB.QueryRow(
+		"SELECT id, name, email, password, IsAdmin FROM organisors WHERE email = ?",
+		email,
+	)
+
 	organisor := &Organisor{}
-	if err := row.Scan(&organisor.ID, &organisor.Name, &organisor.Email, &organisor.Password, &organisor.IsAdmin); err != nil {
+	if err := row.Scan(
+		&organisor.ID, &organisor.Name, &organisor.Email, &organisor.Password, &organisor.IsAdmin,
+	); err != nil {
 		logger.Error(fmt.Sprintf("Failed to find user %s in DB: %s", organisor.Name, err.Error()))
 
 		if err == sql.ErrNoRows {
@@ -32,7 +38,10 @@ func FindUserByEmail(email string) (*Organisor, error) {
 }
 
 func CreateOrganisor(user Organisor) error {
-	_, err := database.DB.Exec("INSERT INTO organisors (name, email, password) VALUES (?, ?, ?)", user.Name, user.Email, user.Password)
+	_, err := database.DB.Exec(
+		"INSERT INTO organisors (name, email, password, IsAdmin) VALUES (?, ?, ?, ?)",
+		user.Name, user.Email, user.Password, user.IsAdmin,
+	)
 
 	return err
 }
