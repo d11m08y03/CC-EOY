@@ -1,8 +1,10 @@
 package email
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/d11m08y03/CC-EOY/config"
 	"github.com/d11m08y03/CC-EOY/logger"
@@ -16,6 +18,7 @@ var emailCount int
 var index int
 
 var message *mail.Message
+var emailContent string
 
 func InitEmails() {
 	var err error
@@ -36,17 +39,17 @@ func InitEmails() {
 		log.Fatalf("Failed to read HTML file: %v", err)
 	}
 
+	emailContent = string(htmlContent)
+
 	message = mail.NewMessage()
 
-  message.Embed("./email/images/facebook2x.png")
-  message.Embed("./email/images/instagram2x.png")
-  message.Embed("./email/images/linkedin2x.png")
-  message.Embed("./email/images/tiktok2x.png")
-
-	message.SetBody("text/html", string(htmlContent))
+	message.Embed("./email/images/facebook2x.png")
+	message.Embed("./email/images/instagram2x.png")
+	message.Embed("./email/images/linkedin2x.png")
+	message.Embed("./email/images/tiktok2x.png")
 }
 
-func SendEmail(recipient string) {
+func SendEmail(recipient string, name string) {
 	logger.Info("Attempting to send email")
 	sender := emails[index]
 	index = (index + 1) % (emailCount)
@@ -63,6 +66,9 @@ func SendEmail(recipient string) {
 	}
 
 	message.SetHeader("Subject", "EOY Party")
+
+	modifiedEmail := strings.Replace(emailContent, "Students,", fmt.Sprintf("%s,", name), 1)
+	message.SetBody("text/html", modifiedEmail)
 
 	d := gomail.NewDialer(smtpHost, smtpPort, sender.Email, sender.AppPassword)
 	if err := d.DialAndSend(message); err != nil {

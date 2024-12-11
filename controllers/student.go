@@ -102,7 +102,7 @@ func MarkStudentAsPresent(c *gin.Context) {
 	}
 
 	logger.Info(fmt.Sprintf("%s marked %s as present", organisorIDStr, payload.StudentID))
-	go email.SendEmail(updatedStudent.Email.String)
+	go email.SendEmail(updatedStudent.Email.String, updatedStudent.FullName.String)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":          "Student marked as present",
