@@ -13,22 +13,38 @@ var Environment string
 var StudentCSVPath string
 var CCEmailCSVPath string
 var EmailRecipient string
+var JWTKey string
 
 func InitConfig() {
-	err := godotenv.Load()
-	if err != nil {
+	if err := godotenv.Load(); err != nil {
 		logger.Fatal(fmt.Sprintf("Failed to load .env file, exiting. Error: %s", err.Error()))
 	}
 
-	Port = os.Getenv("PORT")
-	Environment = os.Getenv("ENVIRONMENT")
-	StudentCSVPath = os.Getenv("STUDENT_CSV_PATH")
-	CCEmailCSVPath = os.Getenv("CC_EMAIL_CSV_PATH")
-	EmailRecipient = os.Getenv("EMAIL_RECIPIENT")
+	missingVars := []string{}
 
-	logger.Info(fmt.Sprintf("Loaded port: %s", Port))
-	logger.Info(fmt.Sprintf("Loaded environment: %s", Environment))
-	logger.Info(fmt.Sprintf("Loaded student csv file path: %s", StudentCSVPath))
-	logger.Info(fmt.Sprintf("Loaded cc email csv file path: %s", CCEmailCSVPath))
-	logger.Info(fmt.Sprintf("Loaded email recipient: %s", EmailRecipient))
+	// Load environment variables
+	config := map[string]*string{
+		"PORT":              &Port,
+		"ENVIRONMENT":       &Environment,
+		"STUDENT_CSV_PATH":  &StudentCSVPath,
+		"CC_EMAIL_CSV_PATH": &CCEmailCSVPath,
+		"EMAIL_RECIPIENT":   &EmailRecipient,
+		"JWT_KEY":           &JWTKey,
+	}
+
+	for key, target := range config {
+		*target = os.Getenv(key)
+		if *target == "" {
+			missingVars = append(missingVars, key)
+		}
+	}
+
+	// Check for missing variables
+	if len(missingVars) > 0 {
+		logger.Fatal(fmt.Sprintf("Missing required environment variables: %v", missingVars))
+	}
+
+	// Log non-sensitive configurations
+	logger.Info(fmt.Sprintf("Configuration loaded: Port=%s, Environment=%s, StudentCSVPath=%s, CCEmailCSVPath=%s, EmailRecipient=%s",
+		Port, Environment, StudentCSVPath, CCEmailCSVPath, EmailRecipient))
 }
