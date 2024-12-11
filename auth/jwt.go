@@ -3,15 +3,16 @@ package auth
 import (
 	"time"
 
+	"github.com/d11m08y03/CC-EOY/config"
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtKey = []byte("my_secret_key")
+var jwtKey = []byte(config.JWTKey)
 
 type OrganisorClaims struct {
 	OrganisorID uint   `json:"organisor_id"`
 	Email       string `json:"email"`
-	IsAdmin     bool `json:"is_admin"`
+	IsAdmin     bool   `json:"is_admin"`
 	jwt.StandardClaims
 }
 
@@ -20,7 +21,7 @@ func GenerateJWT(userID uint, email string, isAdmin bool) (string, error) {
 	claims := &OrganisorClaims{
 		OrganisorID: userID,
 		Email:       email,
-		IsAdmin:     isAdmin, // Include admin status in claims
+		IsAdmin:     isAdmin,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
