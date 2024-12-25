@@ -73,17 +73,13 @@ class _HomeState extends State<Home> {
           _responseMessage = "Request successful";
         });
 
-        // String email = responseData['email'] ?? 'No Email Provided';
         String fullName = responseData['full_name'] ?? 'No Name Provided';
         String studentID = responseData['student_id'] ?? 'No ID Provided';
-        String contactNumber =
-            responseData['contact_number'] ?? 'No contact_number Provided';
         String programOfStudy =
             responseData['program_of_study'] ?? 'No program_of_study Provided';
         String level = responseData['level'] ?? 'No level Provided';
 
-        _showBottomModal(
-            fullName, studentID, programOfStudy, level, contactNumber);
+        _showBottomModal(fullName, studentID, programOfStudy, level);
       } else if (response.statusCode == 404) {
         String errorMessage = responseData["error"] ?? "Student not found.";
         _show404AlertModal(errorMessage, _studentNumberController.text);
@@ -233,8 +229,8 @@ class _HomeState extends State<Home> {
     );
   }
 
-  void _showBottomModal(String fullName, String studentID,
-      String programOfStudy, String level, String contactNumber) {
+  void _showBottomModal(
+      String fullName, String studentID, String programOfStudy, String level) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -285,15 +281,11 @@ class _HomeState extends State<Home> {
 
               _buildInfoRow(Icons.person, "Full Name", fullName),
               const SizedBox(height: 15),
-              // _buildInfoRow(Icons.email, "Email", email),
-              // const SizedBox(height: 15),
               _buildInfoRow(Icons.badge, "Student ID", studentID),
               const SizedBox(height: 25),
               _buildInfoRow(Icons.school, "Program of Study", programOfStudy),
               const SizedBox(height: 15),
               _buildInfoRow(Icons.badge, "Level", level),
-              const SizedBox(height: 15),
-              _buildInfoRow(Icons.phone, "Contact Number", contactNumber),
               const SizedBox(height: 25),
               // Close Button
               Center(
