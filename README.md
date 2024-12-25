@@ -1,16 +1,38 @@
-# eoy_frontend
+# CC-EOY
+Crowd Management for UOM EOY Party. This app allows event organisors
+to scan Student IDs and mark students as present. The scan will
+only be successful if a student registered for the event. In
+case they did not, the application will allow the organisor
+to manually register the student.
 
-A new Flutter project.
+# Server
+The server, on the `master` branch, is built in Go. To run, adjust
+environment variables and build using:
 
-## Getting Started
+```bash
+go build cmd/main.go
+```
 
-This project is a starting point for a Flutter application.
+This will output `main`, the executable. Afterwards, simply run it. The server
+will automatically log events in `logs.txt` in a production environment. In
+development, it will print the logs to standard output.
 
-A few resources to get you started if this is your first Flutter project:
+**Note**: The sqlite3 package this repo uses depends on CGO. As such
+the above build command will not provide a purely static executable.
+It will depend on the sqlite3 library at runtime. On debian systems,
+install it as follows:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```bash
+sudo apt install -y build-essential libsqlite3-dev
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# Client
+The frontend is a mobile app implemented in flutter. It is located on the
+`frontend` branch. To build:
+
+```bash
+flutter build apk --release --dart-define-from-file .env
+```
+
+Make sure to pass the `--dart-define-from-file .env` so that environment variables
+are properly initialised.
