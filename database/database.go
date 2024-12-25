@@ -95,14 +95,14 @@ func loadStudentDataFromCSV(filename string) {
 		log.Fatalf("Failed to read CSV file '%s': %v", filename, err)
 	}
 
-  recordCount := 1
+	recordCount := 1
 
 	// Insert records into the database
 	for i, record := range records {
-    // Skip the title row
-    if i == 0 {
-      continue
-    }
+		// Skip the title row
+		if i == 0 {
+			continue
+		}
 
 		if len(record) < 9 {
 			log.Printf("Skipping invalid record: %v", record)
@@ -130,11 +130,11 @@ func loadStudentDataFromCSV(filename string) {
 		if err != nil {
 			log.Printf("Failed to insert record '%v': %v", record, err)
 		} else {
-      recordCount += 1
+			recordCount += 1
 		}
 	}
 
-  log.Printf("Inserted %d students", recordCount)
+	log.Printf("Inserted %d students", recordCount)
 }
 
 func loadEmailDataFromCSV(filename string) {
@@ -158,10 +158,10 @@ func loadEmailDataFromCSV(filename string) {
 
 	// Insert records into the database
 	for i, record := range records {
-    // Skip the title row
-    if i == 0 {
-      continue
-    }
+		// Skip the title row
+		if i == 0 {
+			continue
+		}
 
 		if len(record) < 3 {
 			log.Printf("Skipping invalid record: %v", record)

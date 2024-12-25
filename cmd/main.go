@@ -17,9 +17,9 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-  // Emails should always be initialised after the database
-  database.InitDB()
-  email.InitEmails()
+	// Emails should always be initialised after the database
+	database.InitDB()
+	email.InitEmails()
 
 	router := routes.SetupRouter()
 	router.Run(config.Port)
