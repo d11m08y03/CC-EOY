@@ -29,9 +29,9 @@ func CreateTables() {
 		loadStudentDataFromCSV(config.StudentCSVPath)
 	}
 
-	if executeSQLFile("./database/create_emails.sql", "emails") {
-		loadEmailDataFromCSV(config.CCEmailCSVPath)
-	}
+	// if executeSQLFile("./database/create_emails.sql", "emails") {
+	// 	loadEmailDataFromCSV(config.CCEmailCSVPath)
+	// }
 
 	executeSQLFile("./database/create_organisors.sql", "organisors")
 }
@@ -111,20 +111,20 @@ func loadStudentDataFromCSV(filename string) {
 
 		insertQuery := `
         INSERT INTO students (
-            Timestamp, Email, FullName, ProgrammeOfStudy, Faculty, StudentID, Level, ContactNumber, InternshipWork
+            Timestamp, Email, FullName, ProgrammeOfStudy, StudentID, Faculty, Level, ContactNumber, EmergencyContact
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`
 
 		_, err := DB.Exec(
 			insertQuery,
 			strings.TrimSpace(record[0]),
 			strings.TrimSpace(record[1]),
-			strings.TrimSpace(record[2]),
 			strings.TrimSpace(record[3]),
 			strings.TrimSpace(record[4]),
 			strings.TrimSpace(record[5]),
 			strings.TrimSpace(record[6]),
 			strings.TrimSpace(record[7]),
 			strings.TrimSpace(record[8]),
+			strings.TrimSpace(record[9]),
 		)
 
 		if err != nil {

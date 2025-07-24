@@ -7,7 +7,7 @@ CREATE TABLE students (
   StudentID TEXT UNIQUE,     
   Level TEXT,                    
   ContactNumber TEXT,            
-  InternshipWork TEXT,
+  EmergencyContact TEXT,
   Presence INTEGER DEFAULT 0,
   OrganiserID TEXT,
   FOREIGN KEY (OrganiserID) REFERENCES organisor(ID)
